@@ -3,6 +3,7 @@ import { Box, Play, Square, RotateCcw, Activity, Server } from 'lucide-react';
 
 const ContainerCard = ({ container }) => {
   const isRunning = container.Status?.includes('Up');
+  const isSystemContainer = container.Names === 'infrastack' || container.Names === 'infrastack-db';
 
   return (
     <div className={`container-card glass ${isRunning ? 'running' : 'stopped'}`}>
@@ -22,16 +23,18 @@ const ContainerCard = ({ container }) => {
         </div>
       </div>
 
-      <div className="card-actions">
-        {/* Buttons are just visual here as per request for "layout improvement" 
-            Real actions would hit the /api/execute endpoint */}
-        <button title="Restart" className="action-icon"><RotateCcw size={14} /></button>
-        {isRunning ? (
-            <button title="Stop" className="action-icon stop"><Square size={14} /></button>
-        ) : (
-            <button title="Start" className="action-icon start"><Play size={14} /></button>
-        )}
-      </div>
+      {!isSystemContainer && (
+        <div className="card-actions">
+          {/* Buttons are just visual here as per request for "layout improvement" 
+              Real actions would hit the /api/execute endpoint */}
+          <button title="Restart" className="action-icon"><RotateCcw size={14} /></button>
+          {isRunning ? (
+              <button title="Stop" className="action-icon stop"><Square size={14} /></button>
+          ) : (
+              <button title="Start" className="action-icon start"><Play size={14} /></button>
+          )}
+        </div>
+      )}
     </div>
   );
 };
