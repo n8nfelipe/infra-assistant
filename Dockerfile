@@ -10,7 +10,7 @@ RUN npm run build
 FROM node:20-alpine
 WORKDIR /app
 # Install some basic tools that the assistant might use or help install
-RUN apk add --no-cache sudo bash curl git
+RUN apk add --no-cache sudo bash curl git docker
 
 COPY server/package*.json ./server/
 RUN cd server && npm install --only=production

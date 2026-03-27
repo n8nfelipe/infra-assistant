@@ -9,7 +9,31 @@ services:
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - PORT=3001
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=infrastack_pass
+      - DB_NAME=infrastack
+      - JWT_SECRET=${JWT_SECRET}
     volumes:
       # Optional: Mount docker socket to allow the assistant to manage other containers
       - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15-alpine
+    container_name: infrastack-db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=infrastack_pass
+      - POSTGRES_DB=infrastack
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

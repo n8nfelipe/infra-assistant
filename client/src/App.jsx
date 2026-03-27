@@ -1,12 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Terminal as TerminalIcon, Send, Play, ShieldAlert, Cpu } from 'lucide-react';
+import { Terminal as TerminalIcon, Send, Play, ShieldAlert, Cpu, LogOut, User, History } from 'lucide-react';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
+import AuthForm from './components/AuthForm';
+import ColorPicker from './components/ColorPicker';
+import ContainerList from './components/ContainerCards';
+import HistoryPanel from './components/HistoryPanel';
 
-const App = () => {
+const MainApp = () => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([
     { role: 'ai', content: 'Hello! I am InfraStack. How can I help you manage your server today? Try asking: "Install git and htop"' }
   ]);
   const [loading, setLoading] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const { user, logout } = useAuth();
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -26,7 +34,7 @@ const App = () => {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:3001/api/generate', {
+      const response = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt: input }),
@@ -49,7 +57,7 @@ const App = () => {
       return newMessages;
     });
 
-    const response = await fetch('http://localhost:3001/api/execute', {
+    const response = await fetch('/api/execute', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ command }),
@@ -80,74 +88,126 @@ const App = () => {
   return (
     <div className="app-container">
       <header>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Cpu className="text-primary" size={24} />
-          <h1>InfraStack</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Cpu className="text-primary" size={24} />
+            <h1>InfraStack</h1>
+          </div>
+          <ColorPicker />
         </div>
-        <div className="status-badge" style={{ fontSize: '0.8rem', opacity: 0.6 }}>
-          Server Connected
+        
+        <div className="user-profile">
+          <button className="btn-logout" onClick={() => setShowHistory(true)}>
+            <History size={14} style={{ marginRight: '4px' }} />
+            Histórico
+          </button>
+          <div className="user-email">
+            <User size={14} style={{ marginRight: '4px' }} />
+            {user?.email}
+          </div>
+          <button className="btn-logout" onClick={logout}>
+            <LogOut size={14} style={{ marginRight: '4px' }} />
+            Sair
+          </button>
         </div>
       </header>
 
-      <div className="chat-box">
-        <div className="messages">
-          {messages.map((m, i) => (
-            <div key={i} className={`message ${m.role}`}>
-              {m.content}
-              
-              {m.role === 'ai' && m.data?.command && (
-                <div className="command-card">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                    <TerminalIcon size={16} />
-                    <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>Proposed Command</span>
-                  </div>
-                  <div className="command-text">{m.data.command}</div>
-                  
-                  {m.data.warning && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#fbbf24', fontSize: '0.75rem', marginTop: '0.5rem' }}>
-                      <ShieldAlert size={14} />
-                      {m.data.warning}
+      <div className="app-content">
+        <ContainerList />
+
+        <div className="chat-box">
+          <div className="messages">
+            {messages.map((m, i) => (
+              <div key={i} className={`message ${m.role}`}>
+                {m.content}
+                
+                {m.role === 'ai' && m.data?.command && (
+                  <div className="command-card">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                      <TerminalIcon size={16} />
+                      <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>Proposed Command</span>
                     </div>
-                  )}
+                    <div className="command-text">{m.data.command}</div>
+                    
+                    {m.data.warning && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#fbbf24', fontSize: '0.75rem', marginTop: '0.5rem' }}>
+                        <ShieldAlert size={14} />
+                        {m.data.warning}
+                      </div>
+                    )}
 
-                  <div className="action-buttons">
-                    <button 
-                      className="btn-execute" 
-                      onClick={() => executeCommand(m.data.command, i)}
-                      disabled={m.executing}
-                    >
-                      {m.executing ? 'Executing...' : 'Execute Now'}
-                    </button>
-                  </div>
-
-                  {(m.terminalOutput || m.executing) && (
-                    <div className="terminal">
-                      {m.terminalOutput}
+                    <div className="action-buttons">
+                      <button 
+                        className="btn-execute" 
+                        onClick={() => executeCommand(m.data.command, i)}
+                        disabled={m.executing}
+                      >
+                        {m.executing ? 'Executing...' : 'Execute Now'}
+                      </button>
                     </div>
-                  )}
-                </div>
-              )}
-            </div>
-          ))}
-          <div ref={messagesEndRef} />
-        </div>
 
-        <div className="input-area">
-          <input 
-            type="text" 
-            placeholder={loading ? "Generating..." : "Ask to install or configure something..."} 
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-            disabled={loading}
-          />
-          <button className="btn-execute" onClick={handleSend} disabled={loading}>
-            <Send size={20} />
-          </button>
+                    {(m.terminalOutput || m.executing) && (
+                      <div className="terminal">
+                        {m.terminalOutput}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
+
+          <div className="input-area">
+            <input 
+              type="text" 
+              placeholder={loading ? "Generating..." : "Ask to install or configure something..."} 
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+              disabled={loading}
+            />
+            <button className="btn-execute" onClick={handleSend} disabled={loading}>
+              <Send size={20} />
+            </button>
+          </div>
         </div>
       </div>
+
+      {showHistory && <HistoryPanel onClose={() => setShowHistory(false)} />}
     </div>
   );
 };
+
+const App = () => {
+    return (
+        <ThemeProvider>
+            <AuthProvider>
+                <AuthWrapper />
+            </AuthProvider>
+        </ThemeProvider>
+    );
+};
+
+const AuthWrapper = () => {
+    const { user, loading } = useAuth();
+
+    if (loading) {
+        return (
+            <div className="auth-container">
+                <Loader2 className="animate-spin" size={48} color="#6366f1" />
+            </div>
+        );
+    }
+
+    if (!user) {
+        return <AuthForm />;
+    }
+
+    return <MainApp />;
+};
+
+// Re-import Loader2 for AuthWrapper
+import { Loader2 } from 'lucide-react';
 
 export default App;
