@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  infrastack:
+    build: .
+    container_name: infrastack
+    ports:
+      - "3001:3001"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - PORT=3001
+    volumes:
+      # Optional: Mount docker socket to allow the assistant to manage other containers
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
