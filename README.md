@@ -2,139 +2,92 @@
 
 # 🚀 InfraStack
 
-### Your AI-Powered Linux Infrastructure Assistant
+### Seu Assistente de Infraestrutura Linux com IA
 
-*Talk to your server like a human. Let it do the rest.*
+*Fale com seu servidor como um humano. Ele faz o resto.*
 
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
 [![Gemini](https://img.shields.io/badge/Powered%20by-Gemini%20AI-8E75B2?logo=google&logoColor=white)](https://ai.google.dev/)
-[![Node.js](https://img.shields.io/badge/Node.js-Express%205-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 
 </div>
 
 ---
 
-## O que é o InfraStack?
-
-**InfraStack** é uma ferramenta instalável via Docker que transforma linguagem natural em comandos de servidor Linux. Sem memorizar comandos. Sem consultar documentação. Apenas peça o que você quer — e execute com um clique.
-
-> *"Instala o htop e git no servidor"* → O AI gera o comando correto para o seu sistema → Você aprova → Execução em tempo real no terminal integrado. Simples assim.
+![Dashboard Mockup](./assets/dashboard_mockup.png)
+*Interface principal com dashboard de containers e chat inteligente.*
 
 ---
 
-## ✨ Funcionalidades
+## ✨ Novas Funcionalidades (v2.0)
 
 | Feature | Detalhe |
 |---|---|
-| 🧠 **Natural Language** | Descreva o que quer em português ou inglês |
-| 🎯 **OS-Aware** | Detecta automaticamente o sistema (Alpine, Ubuntu, Debian, CentOS...) e usa o gerenciador de pacotes correto (`apk`, `apt`, `yum`...) |
-| 🛡️ **Execução Segura** | O AI propõe o comando, você **aprova antes** de executar |
-| 📟 **Terminal em Tempo Real** | Veja a saída do comando sendo executado ao vivo, direto na interface |
-| 💎 **Interface Premium** | UI moderna com glassmorphism, gradientes e animações suaves |
-| 🐳 **100% Docker** | Instalação com um único comando |
+| 🔐 **Autenticação Completa** | Sistema de Login/Signup seguro com JWT e Cookies httpOnly |
+| 🐳 **Docker Dashboard** | Monitore e gerencie containers em tempo real direto na interface |
+| 📜 **Histórico de Logs** | Todo o histórico de comandos gerados e executados salvo por usuário |
+| 🎨 **Temas Dinâmicos** | Troque a cor principal do projeto (Blue, Purple, Emerald, Sunset) instantaneamente |
+| 🧠 **Contexto Inteligente** | O AI agora entende o estado do seu servidor através do Docker Socket |
 
 ---
 
-## 🚀 Instalação
+## 🏗️ Arquitetura Integrada
+
+O **InfraStack** agora utiliza uma infraestrutura robusta para persistência e monitoramento:
+
+- **Backend**: Node.js/Express com acesso ao `/var/run/docker.sock`.
+- **Database**: PostgreSQL para armazenamento de usuários e logs de comandos.
+- **AI**: Gemini Pro para geração de comandos seguros e explicativos.
+- **Frontend**: React com Context API para temas e autenticação.
+
+---
+
+## 🚀 Instalação Rápida
 
 ### Pré-requisitos
-- Docker e Docker Compose instalados
-- Uma **chave de API Gemini** gratuita → [Google AI Studio](https://aistudio.google.com/apikey)
+- Docker e Docker Compose
+- Chave de API Gemini → [Google AI Studio](https://aistudio.google.com/apikey)
 
-### 1. Clone o repositório
+### 1. Configure o Ambiente
 
-```bash
-git clone <repo-url>
-cd infra-assistant
+Crie um arquivo `.env` na raiz:
+```env
+GEMINI_API_KEY=sua_chave_aqui
+JWT_SECRET=uma_string_aleatoria_longa
+POSTGRES_PASSWORD=sua_senha_db
 ```
 
-### 2. Configure sua chave de API
-
-```bash
-echo "GEMINI_API_KEY=sua_chave_aqui" > .env
-```
-
-### 3. Suba o container
+### 2. Suba tudo com Docker Compose
 
 ```bash
 docker-compose up -d
 ```
 
-### 4. Acesse a interface
-
-```
-http://localhost:3001
-```
-
-**Pronto!** 🎉
+O sistema irá subir automaticamente o **App**, o banco **PostgreSQL** e configurar a rede interna.
 
 ---
 
-## 💬 Exemplos de uso
+## 🔒 Segurança em Primeiro Lugar
 
-```
-"Instala o git, curl e wget no servidor"
-"Verifica o uso de disco e memória"
-"Lista todos os containers Docker rodando"
-"Configura o timezone para America/Sao_Paulo"
-"Mostra os logs do nginx"
-"Quanto espaço livre tem no disco?"
-```
+- **Child Process Isolation**: Comandos são executados dentro do contexto do container Node.
+- **Confirmação Dupla**: Você visualiza o comando e a explicação *antes* de clicar em executar.
+- **Senhas Criptografadas**: Armazenamento seguro via `bcrypt`.
 
 ---
 
-## 🏗️ Arquitetura
+## 📂 Estrutura do Projeto
 
 ```
 infra-assistant/
 ├── client/                  # Frontend React (Vite)
-│   └── src/
-│       ├── App.jsx          # Interface de chat principal
-│       └── index.css        # Design premium (glassmorphism)
-├── server/                  # Backend Node.js / Express 5
-│   ├── index.js             # API endpoints + serve frontend
-│   ├── gemini.js            # Integração Gemini AI + detecção de OS
-│   └── executor.js          # Execução segura de comandos (streaming)
-├── Dockerfile               # Multi-stage build
-├── docker-compose.yml       # Configuração de deploy
-└── .env                     # Suas chaves (não commitado)
-```
-
-### Como funciona internamente
-
-```
-Usuário digita → API /generate → Gemini AI analisa
-    → Retorna JSON com comando + explicação
-    → Usuário aprova → API /execute
-    → Backend executa com child_process
-    → Output streamed em tempo real para o browser
-```
-
----
-
-## 🔒 Segurança
-
-- **Aprovação Obrigatória**: Nenhum comando é executado sem confirmação explícita do usuário.
-- **Avisos automáticos**: O AI indica riscos potenciais de cada comando antes da execução.
-- **`.gitignore` configurado**: Suas credenciais nunca são expostas no repositório.
-
----
-
-## ⚙️ Configuração Avançada
-
-### Variáveis de ambiente
-
-| Variável | Descrição | Padrão |
-|---|---|---|
-| `GEMINI_API_KEY` | Sua chave da API do Google Gemini | **Obrigatório** |
-| `PORT` | Porta da aplicação | `3001` |
-
-### Múltiplos arquivos de ambiente
-
-```bash
-# .env → configurações padrão
-# .env.local → sobrescreve localmente (não commitado)
-echo "GEMINI_API_KEY=minha_chave" > .env.local
+│   ├── src/components/      # Cards de Containers, ColorPicker, History
+│   └── src/context/         # AuthContext, ThemeContext
+├── server/                  # Backend Node.js / Express
+│   ├── db/                  # Esquema Postgres e Conexão
+│   ├── auth/                # Lógica de JWT e Bcrypt
+│   └── routes/              # Endpoints de Logs e Auth
+├── docker-compose.yml       # Stack: App + DB
+└── .env                     # Configurações sensíveis
 ```
 
 ---
@@ -146,7 +99,7 @@ PRs são bem-vindos! Se você tem ideias de novas features — como histórico d
 ---
 
 <div align="center">
+![Auth Mockup](./assets/auth_mockup.png)
 
 Feito com ☕ e muito terminal.
-
 </div>
