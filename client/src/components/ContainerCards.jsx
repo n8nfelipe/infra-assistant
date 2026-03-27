@@ -6,32 +6,26 @@ const ContainerCard = ({ container }) => {
   const isSystemContainer = container.Names === 'infrastack' || container.Names === 'infrastack-db';
 
   return (
-    <div className={`container-card glass ${isRunning ? 'running' : 'stopped'}`}>
-      <div className="card-top">
-        <div className="container-icon">
-          <Box size={20} />
-        </div>
-        <div className={`status-indicator ${isRunning ? 'active' : ''}`} />
+    <div className={`container-card glass line-layout ${isRunning ? 'running' : 'stopped'}`}>
+      <div className="container-icon-small">
+        <Box size={16} />
       </div>
       
-      <div className="card-info">
-        <h3>{container.Names}</h3>
-        <p className="image-tag">{container.Image}</p>
-        <div className="status-text">
-            <Activity size={12} />
-            <span>{container.Status}</span>
+      <div className="card-info-compact">
+        <div className="name-status">
+            <h3>{container.Names}</h3>
+            <div className={`status-dot ${isRunning ? 'active' : ''}`} />
         </div>
+        <p className="image-tag-compact">{container.Image}</p>
       </div>
 
       {!isSystemContainer && (
-        <div className="card-actions">
-          {/* Buttons are just visual here as per request for "layout improvement" 
-              Real actions would hit the /api/execute endpoint */}
-          <button title="Restart" className="action-icon"><RotateCcw size={14} /></button>
+        <div className="card-actions-compact">
+          <button title="Restart" className="action-icon-small"><RotateCcw size={12} /></button>
           {isRunning ? (
-              <button title="Stop" className="action-icon stop"><Square size={14} /></button>
+              <button title="Stop" className="action-icon-small stop"><Square size={12} /></button>
           ) : (
-              <button title="Start" className="action-icon start"><Play size={14} /></button>
+              <button title="Start" className="action-icon-small start"><Play size={12} /></button>
           )}
         </div>
       )}
